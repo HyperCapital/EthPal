@@ -121,14 +121,14 @@ export default class Login extends Component {
     console.log("Request:",verifyEmail)
     this.isLoading(false)
     this.switchForm('verify')
-    // fetch('https://verifications.3box.io/send-email-verification', {
-    // method: 'post',
-    // body: JSON.stringify(verifyEmail)
-    // }).then(function(response) {
-    //     return response.json();
-    // }).then(function(data) {
-    //     console.log('response:', data); // {status:"success"}
-    // });
+    fetch('https://verifications.3box.io/send-email-verification', {
+    method: 'post',
+    body: JSON.stringify(verifyEmail)
+    }).then(function(response) {
+        return response.json();
+    }).then(function(data) {
+        console.log('response:', data); // {status:"success"}
+    });
   }
 
   confirmLogin = () => {
