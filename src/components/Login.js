@@ -3,6 +3,7 @@ import Spinner from 'react-spinner-material';
 import { Button, Form, Header, Icon } from "semantic-ui-react";
 import { availableEnvironments, createSdk } from '@archanova/wallet-sdk';
 import Box from "3box"
+import Web3 from "web3"
 
 export default class Login extends Component {
   constructor(props) {
@@ -51,9 +52,11 @@ export default class Login extends Component {
     const { username, password, email, phone_number } = this.state
     const sdk = new createSdk(availableEnvironments.staging);
     
+    Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send
+    const web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/89487a9bf72e45e98c2a7b85acff4656'));
     const syncComplete = () => {
       console.log('Sync Complete')
-      this.getName()
+      this.sendEmailVerification()
     }
     if (username !== "" && password !== "" && email !== "" && phone_number !== "") {
       console.log('signing up....')
@@ -61,8 +64,8 @@ export default class Login extends Component {
         console.log('Incomplete fields')
         return
     }
-
     this.isLoading(true)
+
     sdk
       .initialize().then(() => {
         sdk
@@ -73,14 +76,13 @@ export default class Login extends Component {
               .getAccountDevices()
               .then(accountDevices => {
                 console.log('accountDevices:', accountDevices);
-                window.ethereum.enable().then(addresses => {
-                  Box.openBox(addresses[0], window.ethereum, {}).then(box => {
-                    box.onSyncDone(syncComplete)
-                    window.box = box
+              
+                Box.openBox(accountDevices[0].deviceAddress, web3.currentProvider).then(box => {
+                  box.onSyncDone(syncComplete)
+                  window.box = box
 
-                    box.public.all().then(profile => {
-                        console.log('PROFILE:',profile)
-                    })
+                  box.public.all().then(profile => {
+                      console.log('PROFILE:',profile)
                   })
                 })
               })
@@ -91,7 +93,11 @@ export default class Login extends Component {
     .catch(console.error)
   }
 
-  async getName() {
+  sendAsync() {
+   
+  }
+
+  async sendEmailVerification() {
   
     this.removePublicStoreProfile()
     
@@ -147,7 +153,7 @@ export default class Login extends Component {
             console.log('PROFILE:',profile)
           })
       })
-    }) 
+    })
   }
   
   async checkLogin() {
@@ -309,7 +315,7 @@ export default class Login extends Component {
         </Form.Field>
         <Form.Field className="form-field">
           <div className="form-label-container form-btn-container">
-            <Button className="form-btn" id="loginContinue" onClick={() => { this.emailVerify() }}>Continue</Button>
+            <Button className="form-btn" id="loginContinue" onClick={() => { this.switchForm('main') }}>Continue</Button>
           </div>
         </Form.Field>
       </Form>
